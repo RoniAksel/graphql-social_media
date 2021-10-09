@@ -1,23 +1,26 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const { graphqlHTTP } = require('express-graphql');
+const { ApolloServer } = require('apollo-server');
+const gql = require('graphql-tag');
+const mongoose = require('mongoose');
+const Post = require('./models/Post');
+require('dotenv').config()
 
-const schema = {
-  // we will add this later
-};
 
-app.use(cors());
-app.use(
-  '/graphql',
-  graphqlHTTP({
-    schema,
-    graphiql: true,
-    pretty: true
-  })
-);
+const typeDefs = require('./graphql/typeDefs')
+const resolvers = require('./graphql/resolvers')
 
-app.listen(4000);
-console.log('SERVER OK');
 
-// hlF9lKN6cue8Ry5y
+const server = new ApolloServer({
+    typeDefs,
+    resolvers
+})
+
+mongoose.connect(process.env.MONGODB, {
+    useNewUrlParser: true
+}).then(() => {
+    console.log(`Mongo Connected`)
+    return server.listen({ port: 5000 });
+}).then((res) => {
+    console.log(`Server running on ${res.url}`)
+})
+
+
